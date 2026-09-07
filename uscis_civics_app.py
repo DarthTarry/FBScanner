@@ -24,7 +24,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox, font
 
 def load_civics_questions():
-    json_path = os.path.join(os.path.dirname(__file__), "n400_civics_questions.json")
+    if getattr(sys, 'frozen', False):
+        base_dir = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+    else:
+        base_dir = os.path.dirname(os.path.abspath(__file__))
+    json_path = os.path.join(base_dir, "n400_civics_questions.json")
     if os.path.exists(json_path):
         try:
             with open(json_path, "r", encoding="utf-8") as f:
@@ -135,7 +139,7 @@ class USCISStudyApp:
         header_frame = ttk.Frame(self.root, style="Header.TFrame", padding="15 12 15 12")
         header_frame.pack(fill=tk.X)
 
-        title_lbl = ttk.Label(header_frame, text="🇺🇸 USCIS Civics N-400 Study Assistant", style="Header.TLabel")
+        title_lbl = ttk.Label(header_frame, text=" USCIS Civics N-400 Study Assistant", style="Header.TLabel")
         title_lbl.pack(anchor=tk.W)
 
         subtitle_lbl = ttk.Label(header_frame, text="⭐ Star-Spangled Banner Dark Edition • Official 2025 Version (128 Questions)", style="SubHeader.TLabel")
