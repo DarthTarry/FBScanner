@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>USCIS Civics Test N-400 Study App (2025 - 128 Questions)</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Embedded 128 Questions Dataset (Allows running completely standalone without local server or CORS block) -->
+  <script src="embedded_dataset.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
+
+  <!-- Top Navigation Header -->
+  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <span class="text-2xl">🇺🇸</span>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">USCIS Civics N-400 Study App</h1>
+          <p class="text-xs text-slate-400">2025 Official Version (128 Questions)</p>
+        </div>
+      </div>
+      <div id="flagged-badge" class="bg-amber-500 text-slate-900 font-bold text-xs px-2.5 py-1 rounded-full hidden">
+        ⭐ 0 Flagged
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-4xl mx-auto px-2 flex border-t border-slate-800 text-sm font-medium">
+      <button id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition">
+        <i class="fa-solid fa-clone mr-1.5"></i> Flashcards
+      </button>
+      <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-pen-to-square mr-1.5"></i> Practice Quiz
+      </button>
+      <button id="tab-btn-flagged" onclick="switchTab('flagged')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-star mr-1.5"></i> Flagged (<span id="flagged-count-tab">0</span>)
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="flex-1 max-w-4xl w-full mx-auto p-4">
+
+    <!-- VIEW 1: FLASHCARDS -->
+    <section id="view-flashcards" class="space-y-4">
+      <!-- Search & Filters -->
+      <div class="bg-white p-3.5 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row gap-3 items-center justify-between">
+        <div class="flex-1 w-full flex flex-col md:flex-row gap-2">
+          <select id="fc-category-filter" onchange="applyFlashcardFilter()" class="bg-slate-50 border border-slate-300 text-sm rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="All Categories">All Categories (128)</option>
+            <option value="American Government">American Government</option>
+            <option value="American History">American History</option>
+            <option value="Integrated Civics">Integrated Civics</option>
+            <option value="65/20 Special">⭐ 65/20 Special (20 Questions)</option>
+            <option value="Flagged Only">⭐ Flagged Questions Only</option>
+          </select>
+          <input type="text" id="fc-search-input" onkeyup="applyFlashcardFilter()" placeholder="Search question or answers..." class="bg-slate-50 border border-slate-300 text-sm rounded-lg p-2 flex-1 focus:ring-blue-500 focus:border-blue-500">
+        </div>
+        <button onclick="shuffleFlashcards()" class="w-full md:w-auto px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-sm rounded-lg transition flex items-center justify-center gap-1.5">
+          <i class="fa-solid fa-shuffle"></i> Shuffle
+        </button>
+      </div>
+
+      <!-- Flashcard Frame -->
+      <div id="flashcard-container" class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden flex flex-col min-h-[360px] relative">
+        <!-- Card Header Info -->
+        <div class="bg-slate-50 px-5 py-3 border-b border-slate-200 flex items-center justify-between text-xs font-semibold text-slate-500">
+          <span id="fc-counter">Question 1 of 128</span>
+          <span id="fc-badge-6520" class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md hidden">⭐ 65/20 Special</span>
+        </div>
+
+        <!-- Question Body -->
+        <div class="p-6 flex-1 flex flex-col justify-center">
+          <h2 id="fc-question-text" class="text-lg md:text-xl font-bold text-slate-900 leading-snug">
+            What is the supreme law of the land?
+          </h2>
+        </div>
+
+        <!-- Answer / Context Area (Flipped State) -->
+        <div id="fc-answer-panel" class="hidden border-t border-slate-200 bg-slate-50 p-6 space-y-4">
+          <div>
+            <h3 class="text-xs uppercase font-bold text-slate-500 tracking-wider mb-2">Acceptable USCIS Answer(s):</h3>
+            <div id="fc-answers-list" class="bg-white p-3.5 rounded-xl border border-slate-200 text-slate-900 font-semibold text-base space-y-1">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xs uppercase font-bold text-blue-600 tracking-wider mb-2">📚 Historical Context & Explanation:</h3>
+            <p id="fc-explanation-text" class="bg-blue-50/80 p-3.5 rounded-xl border border-blue-100 text-blue-950 text-sm leading-relaxed">
+              <!-- Rendered via JS -->
+            </p>
+          </div>
+        </div>
+
+        <!-- Card Click-to-Flip Hint -->
+        <div id="fc-hint-banner" class="bg-slate-50 border-t border-slate-200 py-3 text-center text-xs text-slate-400 italic">
+          💡 Click "Reveal Answer & Explanation" below to check answer.
+        </div>
+      </div>
+
+      <!-- Navigation & Card Actions -->
+      <div class="flex items-center gap-2">
+        <button onclick="prevFlashcard()" class="px-4 py-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl font-semibold text-sm shadow-sm text-slate-700 transition">
+          <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <button onclick="toggleFlip()" class="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-rotate"></i> <span id="fc-flip-btn-text">Reveal Answer & Explanation</span>
+        </button>
+        <button id="fc-flag-btn" onclick="toggleCurrentFlag()" class="px-4 py-3 bg-white hover:bg-amber-50 border border-slate-200 rounded-xl font-semibold text-sm shadow-sm text-slate-700 transition">
+          <i class="fa-regular fa-star text-amber-500"></i>
+        </button>
+        <button onclick="nextFlashcard()" class="px-4 py-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl font-semibold text-sm shadow-sm text-slate-700 transition">
+          <i class="fa-solid fa-chevron-right"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- VIEW 2: PRACTICE QUIZ -->
+    <section id="view-quiz" class="hidden space-y-4">
+      <!-- Quiz Config Panel -->
+      <div id="quiz-config-panel" class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+        <h2 class="font-bold text-base text-slate-900 border-b border-slate-100 pb-2">Quiz Setup</h2>
+        
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Quiz Mode</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button id="quiz-mode-mc" onclick="setQuizMode('mc')" class="py-2.5 px-3 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-bold text-sm transition">
+              Multiple Choice
+            </button>
+            <button id="quiz-mode-text" onclick="setQuizMode('text')" class="py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-sm transition">
+              Type-In Answer
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase mb-1.5">Question Pool Format</label>
+          <select id="quiz-pool-select" class="w-full bg-slate-50 border border-slate-300 text-sm rounded-xl p-2.5 font-medium">
+            <option value="20">20 Questions (2025 Official Format - 12 to pass)</option>
+            <option value="10">10 Questions (65/20 Special Format - 6 to pass)</option>
+            <option value="50">50 Questions</option>
+            <option value="128">All 128 Questions</option>
+            <option value="flagged">Flagged Questions Only</option>
+          </select>
+        </div>
+
+        <button onclick="startQuiz()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-sm transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-play"></i> Start Practice Quiz
+        </button>
+      </div>
+
+      <!-- Active Quiz Interface -->
+      <div id="quiz-active-interface" class="hidden space-y-4">
+        <!-- Progress Bar & Score -->
+        <div class="flex items-center justify-between text-sm font-bold text-slate-700 bg-white p-3.5 rounded-xl border border-slate-200 shadow-sm">
+          <span id="quiz-progress-text">Question 1 of 20</span>
+          <span id="quiz-score-text" class="text-blue-600">Score: 0/0 (0%)</span>
+        </div>
+
+        <!-- Question Card -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <h2 id="quiz-question-text" class="text-lg font-bold text-slate-900 leading-snug">
+            Question prompt goes here...
+          </h2>
+
+          <!-- Multiple Choice Container -->
+          <div id="quiz-mc-options" class="space-y-2.5 pt-2">
+            <!-- Rendered via JS -->
+          </div>
+
+          <!-- Type-In Answer Container -->
+          <div id="quiz-text-container" class="hidden space-y-3 pt-2">
+            <input type="text" id="quiz-text-input" placeholder="Type your answer here..." class="w-full p-3 border border-slate-300 rounded-xl text-base font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            <button onclick="submitTextAnswer()" class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-sm shadow-sm transition">
+              Check Answer
+            </button>
+          </div>
+        </div>
+
+        <!-- Answer Feedback & Explanation Banner -->
+        <div id="quiz-feedback-banner" class="hidden p-4 rounded-xl border space-y-2">
+          <div id="quiz-feedback-title" class="font-bold text-base"></div>
+          <div id="quiz-feedback-explanation" class="text-sm leading-relaxed text-slate-800 border-t pt-2 border-slate-200"></div>
+          <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="w-full mt-3 py-2.5 bg-slate-900 hover:bg-black text-white font-bold text-sm rounded-lg transition">
+            Next Question ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- Quiz Completed Results View -->
+      <div id="quiz-results-panel" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-md text-center space-y-4">
+        <div id="quiz-status-badge" class="inline-block px-4 py-1.5 rounded-full font-extrabold text-sm uppercase tracking-wide">
+          PASSED
+        </div>
+        <h2 id="quiz-final-score" class="text-2xl font-black text-slate-900">Score: 16 / 20 (80%)</h2>
+        <p id="quiz-pass-note" class="text-xs text-slate-500 italic">Official USCIS passing standard requirement: 60%</p>
+        
+        <div id="quiz-missed-notice" class="hidden p-3 bg-red-50 text-red-700 text-xs font-semibold rounded-xl border border-red-100">
+          📌 Missed questions have been added to your Flagged Questions list for review.
+        </div>
+
+        <div class="pt-2 flex flex-col sm:flex-row gap-2 justify-center">
+          <button id="quiz-retry-missed-btn" onclick="retryMissedQuestions()" class="hidden px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm rounded-xl transition">
+            🔄 Retry Missed Questions
+          </button>
+
+          <button onclick="resetQuizConfig()" class="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm rounded-xl transition">
+            🚀 Take Another Quiz
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: FLAGGED & MISSED QUESTIONS -->
+    <section id="view-flagged" class="hidden space-y-4">
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+        <div>
+          <h2 class="font-bold text-base text-slate-900">Flagged & Missed Questions</h2>
+          <p class="text-xs text-slate-500"><span id="flagged-total-count">0</span> items saved for study review</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="startQuizWithFlagged()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition">
+            🎯 Quiz Flagged
+          </button>
+          <button onclick="clearAllFlags()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">
+            Clear All
+          </button>
+        </div>
+      </div>
+
+      <!-- List Container -->
+      <div id="flagged-list-container" class="space-y-3">
+        <!-- Rendered via JS -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Main JavaScript App Logic -->
+  <script>
+    // App State Variables - Uses EMBEDDED_CIVICS_QUESTIONS if present, otherwise fetches
+    let allQuestions = (typeof EMBEDDED_CIVICS_QUESTIONS !== 'undefined') ? EMBEDDED_CIVICS_QUESTIONS : [];
+    let flaggedIds = new Set(JSON.parse(localStorage.getItem('uscis_flagged_ids') || '[]'));
+    
+    // Flashcard State
+    let filteredFlashcards = [];
+    let currentFcIndex = 0;
+    let isFlipped = false;
+
+    // Quiz State
+    let quizQueue = [];
+    let currentQuizIndex = 0;
+    let quizScore = 0;
+    let quizMode = 'mc'; // 'mc' or 'text'
+    let quizPassMark = 12;
+    let quizHistory = [];
+
+    // Initialize Web App
+    async function initApp() {
+      if (!allQuestions || allQuestions.length === 0) {
+        try {
+          const response = await fetch('n400_civics_questions.json');
+          allQuestions = await response.json();
+        } catch (err) {
+          console.error("Failed to fetch dataset.", err);
+        }
+      }
+      
+      updateFlaggedBadge();
+      applyFlashcardFilter();
+    }
+
+    // Tab Navigation
+    function switchTab(tabName) {
+      document.getElementById('view-flashcards').classList.add('hidden');
+      document.getElementById('view-quiz').classList.add('hidden');
+      document.getElementById('view-flagged').classList.add('hidden');
+
+      document.getElementById('tab-btn-flashcards').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+      document.getElementById('tab-btn-quiz').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+      document.getElementById('tab-btn-flagged').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+
+      if (tabName === 'flashcards') {
+        document.getElementById('view-flashcards').classList.remove('hidden');
+        document.getElementById('tab-btn-flashcards').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+      } else if (tabName === 'quiz') {
+        document.getElementById('view-quiz').classList.remove('hidden');
+        document.getElementById('tab-btn-quiz').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+      } else if (tabName === 'flagged') {
+        document.getElementById('view-flagged').classList.remove('hidden');
+        document.getElementById('tab-btn-flagged').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+        renderFlaggedList();
+      }
+    }
+
+    // Flagged Persistent Storage
+    function saveFlagged() {
+      localStorage.setItem('uscis_flagged_ids', JSON.stringify(Array.from(flaggedIds)));
+      updateFlaggedBadge();
+    }
+
+    function updateFlaggedBadge() {
+      const count = flaggedIds.size;
+      document.getElementById('flagged-count-tab').innerText = count;
+      document.getElementById('flagged-total-count').innerText = count;
+      
+      const badge = document.getElementById('flagged-badge');
+      if (count > 0) {
+        badge.innerText = `⭐ ${count} Flagged`;
+        badge.classList.remove('hidden');
+      } else {
+        badge.classList.add('hidden');
+      }
+    }
+
+    // FLASHCARD LOGIC
+    function applyFlashcardFilter() {
+      const cat = document.getElementById('fc-category-filter').value;
+      const query = document.getElementById('fc-search-input').value.trim().toLowerCase();
+
+      filteredFlashcards = allQuestions.filter(q => {
+        if (cat === "Flagged Only" && !flaggedIds.has(q.id)) return false;
+        if (cat === "65/20 Special" && !q.special_65_20) return false;
+        if (cat !== "All Categories" && cat !== "Flagged Only" && cat !== "65/20 Special" && q.category !== cat) return false;
+
+        if (query) {
+          const qMatch = q.question.toLowerCase().includes(query);
+          const aMatch = q.answers.some(a => a.toLowerCase().includes(query));
+          const expMatch = (q.explanation || "").toLowerCase().includes(query);
+          if (!qMatch && !aMatch && !expMatch) return false;
+        }
+        return true;
+      });
+
+      currentFcIndex = 0;
+      isFlipped = false;
+      renderFlashcard();
+    }
+
+    function shuffleFlashcards() {
+      for (let i = filteredFlashcards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [filteredFlashcards[i], filteredFlashcards[j]] = [filteredFlashcards[j], filteredFlashcards[i]];
+      }
+      currentFcIndex = 0;
+      isFlipped = false;
+      renderFlashcard();
+    }
+
+    function renderFlashcard() {
+      const answerPanel = document.getElementById('fc-answer-panel');
+      const hintBanner = document.getElementById('fc-hint-banner');
+      const flipBtnText = document.getElementById('fc-flip-btn-text');
+
+      if (filteredFlashcards.length === 0) {
+        document.getElementById('fc-counter').innerText = "0 Questions";
+        document.getElementById('fc-question-text').innerText = "No matching questions found. Clear search or select 'All Categories'.";
+        document.getElementById('fc-badge-6520').classList.add('hidden');
+        answerPanel.classList.add('hidden');
+        hintBanner.classList.add('hidden');
+        return;
+      }
+
+      const curr = filteredFlashcards[currentFcIndex];
+      const isFlagged = flaggedIds.has(curr.id);
+
+      document.getElementById('fc-counter').innerText = `Question ${currentFcIndex + 1} of ${filteredFlashcards.length} (USCIS #${curr.id})`;
+      document.getElementById('fc-question-text').innerText = curr.question;
+
+      if (curr.special_65_20) {
+        document.getElementById('fc-badge-6520').classList.remove('hidden');
+      } else {
+        document.getElementById('fc-badge-6520').classList.add('hidden');
+      }
+
+      // Render answers list
+      const ansListHtml = curr.answers.map(a => `<div class="flex items-start gap-2"><span class="text-blue-600 font-bold">•</span><span>${a}</span></div>`).join('');
+      document.getElementById('fc-answers-list').innerHTML = ansListHtml;
+      document.getElementById('fc-explanation-text').innerText = curr.explanation || "USCIS Official Civics Study Material.";
+
+      // Update Flag Button Icon
+      const flagBtn = document.getElementById('fc-flag-btn');
+      if (isFlagged) {
+        flagBtn.innerHTML = '<i class="fa-solid fa-star text-amber-500"></i>';
+        flagBtn.className = "px-4 py-3 bg-amber-50 border border-amber-300 rounded-xl font-semibold text-sm shadow-sm text-slate-700 transition";
+      } else {
+        flagBtn.innerHTML = '<i class="fa-regular fa-star text-slate-400"></i>';
+        flagBtn.className = "px-4 py-3 bg-white hover:bg-amber-50 border border-slate-200 rounded-xl font-semibold text-sm shadow-sm text-slate-700 transition";
+      }
+
+      if (isFlipped) {
+        answerPanel.classList.remove('hidden');
+        hintBanner.classList.add('hidden');
+        flipBtnText.innerText = "Hide Answer & Explanation";
+      } else {
+        answerPanel.classList.add('hidden');
+        hintBanner.classList.remove('hidden');
+        flipBtnText.innerText = "Reveal Answer & Explanation";
+      }
+    }
+
+    function toggleFlip() {
+      isFlipped = !isFlipped;
+      renderFlashcard();
+    }
+
+    function prevFlashcard() {
+      if (filteredFlashcards.length === 0) return;
+      currentFcIndex = (currentFcIndex - 1 + filteredFlashcards.length) % filteredFlashcards.length;
+      isFlipped = false;
+      renderFlashcard();
+    }
+
+    function nextFlashcard() {
+      if (filteredFlashcards.length === 0) return;
+      currentFcIndex = (currentFcIndex + 1) % filteredFlashcards.length;
+      isFlipped = false;
+      renderFlashcard();
+    }
+
+    function toggleCurrentFlag() {
+      if (filteredFlashcards.length === 0) return;
+      const qid = filteredFlashcards[currentFcIndex].id;
+      if (flaggedIds.has(qid)) {
+        flaggedIds.delete(qid);
+      } else {
+        flaggedIds.add(qid);
+      }
+      saveFlagged();
+      renderFlashcard();
+    }
+
+    // PRACTICE QUIZ LOGIC
+    function setQuizMode(mode) {
+      quizMode = mode;
+      const mcBtn = document.getElementById('quiz-mode-mc');
+      const textBtn = document.getElementById('quiz-mode-text');
+      if (mode === 'mc') {
+        mcBtn.className = "py-2.5 px-3 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-bold text-sm transition";
+        textBtn.className = "py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-sm transition";
+      } else {
+        textBtn.className = "py-2.5 px-3 rounded-xl border border-blue-600 bg-blue-50 text-blue-700 font-bold text-sm transition";
+        mcBtn.className = "py-2.5 px-3 rounded-xl border border-slate-200 bg-white text-slate-600 font-bold text-sm transition";
+      }
+    }
+
+    function startQuiz(customQueue = null) {
+      const poolVal = document.getElementById('quiz-pool-select').value;
+      
+      if (customQueue) {
+        quizQueue = [...customQueue];
+        quizPassMark = Math.ceil(quizQueue.length * 0.6);
+      } else {
+        let pool = [...allQuestions];
+        if (poolVal === 'flagged') {
+          pool = allQuestions.filter(q => flaggedIds.has(q.id));
+          if (pool.length === 0) {
+            alert("You have no flagged questions to quiz!");
+            return;
+          }
+        } else if (poolVal === '10') {
+          pool = allQuestions.filter(q => q.special_65_20);
+        }
+
+        // Shuffle pool
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+
+        let count = parseInt(poolVal) || pool.length;
+        if (poolVal === '10') count = 10;
+        else if (poolVal === '20') count = 20;
+        else if (poolVal === '50') count = 50;
+
+        quizQueue = pool.slice(0, Math.min(count, pool.length));
+        quizPassMark = (poolVal === '10') ? 6 : ((poolVal === '20') ? 12 : Math.ceil(quizQueue.length * 0.6));
+      }
+
+      currentQuizIndex = 0;
+      quizScore = 0;
+      quizHistory = [];
+
+      document.getElementById('quiz-config-panel').classList.add('hidden');
+      document.getElementById('quiz-results-panel').classList.add('hidden');
+      document.getElementById('quiz-active-interface').classList.remove('hidden');
+
+      renderQuizQuestion();
+    }
+
+    function renderQuizQuestion() {
+      document.getElementById('quiz-feedback-banner').classList.add('hidden');
+      
+      if (currentQuizIndex >= quizQueue.length) {
+        finishQuiz();
+        return;
+      }
+
+      const curr = quizQueue[currentQuizIndex];
+      document.getElementById('quiz-progress-text').innerText = `Question ${currentQuizIndex + 1} of ${quizQueue.length} (USCIS #${curr.id})`;
+      const pct = currentQuizIndex > 0 ? Math.round((quizScore / currentQuizIndex) * 100) : 0;
+      document.getElementById('quiz-score-text').innerText = `Score: ${quizScore}/${currentQuizIndex} (${pct}%)`;
+
+      document.getElementById('quiz-question-text').innerText = curr.question;
+
+      const mcBox = document.getElementById('quiz-mc-options');
+      const textContainer = document.getElementById('quiz-text-container');
+
+      if (quizMode === 'mc') {
+        mcBox.classList.remove('hidden');
+        textContainer.classList.add('hidden');
+        mcBox.innerHTML = '';
+
+        const choices = [...curr.choices];
+        // Shuffle options
+        for (let i = choices.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [choices[i], choices[j]] = [choices[j], choices[i]];
+        }
+
+        choices.forEach((optText) => {
+          const btn = document.createElement('button');
+          btn.className = "w-full text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50 hover:border-blue-300 text-slate-800 font-medium text-sm transition";
+          btn.innerText = optText;
+          btn.onclick = () => submitMcChoice(optText, curr);
+          mcBox.appendChild(btn);
+        });
+
+      } else {
+        mcBox.classList.add('hidden');
+        textContainer.classList.remove('hidden');
+        const textInput = document.getElementById('quiz-text-input');
+        textInput.value = '';
+        textInput.disabled = false;
+        textInput.focus();
+      }
+    }
+
+    function submitMcChoice(selectedText, curr) {
+      const isCorrect = curr.answers.some(ans => 
+        selectedText.toLowerCase().includes(ans.toLowerCase()) || ans.toLowerCase().includes(selectedText.toLowerCase())
+      );
+
+      const mcButtons = document.querySelectorAll('#quiz-mc-options button');
+      mcButtons.forEach(btn => {
+        btn.disabled = true;
+        const btnText = btn.innerText;
+        const btnIsCorrect = curr.answers.some(ans => 
+          btnText.toLowerCase().includes(ans.toLowerCase()) || ans.toLowerCase().includes(btnText.toLowerCase())
+        );
+
+        if (btnText === selectedText) {
+          if (isCorrect) {
+            btn.className = "w-full text-left p-3.5 rounded-xl border-2 border-green-500 bg-green-100 text-green-900 font-bold text-sm shadow-sm";
+          } else {
+            btn.className = "w-full text-left p-3.5 rounded-xl border-2 border-red-500 bg-red-100 text-red-900 font-bold text-sm shadow-sm";
+          }
+        } else if (btnIsCorrect) {
+          btn.className = "w-full text-left p-3.5 rounded-xl border-2 border-green-500 bg-green-50 text-green-900 font-bold text-sm shadow-sm";
+        } else {
+          btn.className = "w-full text-left p-3.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-400 font-medium text-sm opacity-60";
+        }
+      });
+
+      processQuizResult(curr, isCorrect, selectedText);
+    }
+
+    function submitTextAnswer() {
+      const curr = quizQueue[currentQuizIndex];
+      const input = document.getElementById('quiz-text-input').value.trim().toLowerCase();
+      if (!input) return;
+
+      const isCorrect = curr.answers.some(ans => {
+        const cleanAns = ans.replace(/\(.*?\)/g, '').trim().toLowerCase();
+        return input.includes(cleanAns) || cleanAns.includes(input);
+      });
+
+      document.getElementById('quiz-text-input').disabled = true;
+      processQuizResult(curr, isCorrect, input);
+    }
+
+    function processQuizResult(curr, isCorrect, userGiven) {
+      const feedbackBanner = document.getElementById('quiz-feedback-banner');
+      const feedbackTitle = document.getElementById('quiz-feedback-title');
+      const feedbackExp = document.getElementById('quiz-feedback-explanation');
+
+      if (isCorrect) {
+        quizScore++;
+        feedbackBanner.className = "p-4 rounded-xl border border-green-200 bg-green-50 space-y-2";
+        feedbackTitle.className = "font-bold text-base text-green-700";
+        feedbackTitle.innerText = "✅ Correct!";
+      } else {
+        flaggedIds.add(curr.id);
+        saveFlagged();
+        feedbackBanner.className = "p-4 rounded-xl border border-red-200 bg-red-50 space-y-2";
+        feedbackTitle.className = "font-bold text-base text-red-700";
+        const answerDisplay = curr.answers.slice(0, 3).join(' / ');
+        feedbackTitle.innerText = `❌ Incorrect. Official Answer: ${answerDisplay}`;
+      }
+
+      feedbackExp.innerText = `📚 Explanation: ${curr.explanation}`;
+      feedbackBanner.classList.remove('hidden');
+
+      quizHistory.push({ question: curr, correct: isCorrect, userGiven });
+
+      // Disable MC options buttons
+      const mcButtons = document.querySelectorAll('#quiz-mc-options button');
+      mcButtons.forEach(b => b.disabled = true);
+    }
+
+    function nextQuizQuestion() {
+      currentQuizIndex++;
+      renderQuizQuestion();
+    }
+
+    function finishQuiz() {
+      document.getElementById('quiz-active-interface').classList.add('hidden');
+      const resultsPanel = document.getElementById('quiz-results-panel');
+      resultsPanel.classList.remove('hidden');
+
+      const passed = quizScore >= quizPassMark;
+      const pct = Math.round((quizScore / quizQueue.length) * 100);
+
+      const statusBadge = document.getElementById('quiz-status-badge');
+      if (passed) {
+        statusBadge.innerText = "🎉 PASSED";
+        statusBadge.className = "inline-block px-4 py-1.5 rounded-full font-extrabold text-sm uppercase tracking-wide bg-green-100 text-green-800";
+      } else {
+        statusBadge.innerText = "⚠️ NEEDS MORE PRACTICE";
+        statusBadge.className = "inline-block px-4 py-1.5 rounded-full font-extrabold text-sm uppercase tracking-wide bg-amber-100 text-amber-800";
+      }
+
+      document.getElementById('quiz-final-score').innerText = `Score: ${quizScore} / ${quizQueue.length} (${pct}%)`;
+      document.getElementById('quiz-pass-note').innerText = `Passing Standard requirement: ${quizPassMark} out of ${quizQueue.length} correct.`;
+
+      const missed = quizHistory.filter(h => !h.correct).map(h => h.question);
+      const missedNotice = document.getElementById('quiz-missed-notice');
+      const retryBtn = document.getElementById('quiz-retry-missed-btn');
+
+      if (missed.length > 0) {
+        missedNotice.classList.remove('hidden');
+        retryBtn.classList.remove('hidden');
+      } else {
+        missedNotice.classList.add('hidden');
+        retryBtn.classList.add('hidden');
+      }
+    }
+
+    function retryMissedQuestions() {
+      const missed = quizHistory.filter(h => !h.correct).map(h => h.question);
+      if (missed.length > 0) {
+        startQuiz(missed);
+      }
+    }
+
+    function resetQuizConfig() {
+      document.getElementById('quiz-results-panel').classList.add('hidden');
+      document.getElementById('quiz-config-panel').classList.remove('hidden');
+    }
+
+    // FLAGGED LIST VIEW LOGIC
+    function renderFlaggedList() {
+      const container = document.getElementById('flagged-list-container');
+      container.innerHTML = '';
+
+      const flaggedItems = allQuestions.filter(q => flaggedIds.has(q.id));
+
+      if (flaggedItems.length === 0) {
+        container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 font-medium">No flagged questions saved yet.</div>`;
+        return;
+      }
+
+      flaggedItems.forEach(q => {
+        const card = document.createElement('div');
+        card.className = "bg-white p-4 rounded-xl border border-slate-200 shadow-sm space-y-2";
+        card.innerHTML = `
+          <div class="flex items-center justify-between text-xs font-bold text-slate-400">
+            <span>USCIS #${q.id} • ${q.category}</span>
+            <button onclick="removeFlag(${q.id})" class="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-trash-can"></i> Remove
+            </button>
+          </div>
+          <h3 class="font-bold text-slate-900 text-sm">${q.question}</h3>
+          <div class="bg-slate-50 p-2.5 rounded-lg text-xs font-semibold text-slate-700">
+            • ${q.answers.join('<br>• ')}
+          </div>
+          <p class="text-xs text-blue-900 bg-blue-50/60 p-2.5 rounded-lg border border-blue-100">
+            📚 ${q.explanation}
+          </p>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function removeFlag(id) {
+      flaggedIds.delete(id);
+      saveFlagged();
+      renderFlaggedList();
+    }
+
+    function clearAllFlags() {
+      if (confirm("Are you sure you want to clear all flagged questions?")) {
+        flaggedIds.clear();
+        saveFlagged();
+        renderFlaggedList();
+      }
+    }
+
+    function startQuizWithFlagged() {
+      if (flaggedIds.size === 0) {
+        alert("No flagged questions available to quiz.");
+        return;
+      }
+      switchTab('quiz');
+      document.getElementById('quiz-pool-select').value = 'flagged';
+      startQuiz();
+    }
+
+    // Start App on Page Load
+    window.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
