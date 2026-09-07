@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local LLM Hardware & RAM/VRAM Calculator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #76b900;
+    }
+    .font-mono-code {
+      font-family: 'Consolas', 'Courier New', Courier, monospace;
+    }
+  </style>
+</head>
+<body id="app-body" class="bg-[#0b0f19] text-slate-100 min-h-screen font-sans flex flex-col transition-colors duration-300">
+
+  <!-- Header Banner -->
+  <header id="app-header" class="bg-[#121929] border-b border-slate-800 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🎮</span>
+          <h1 id="header-title" class="text-xl font-extrabold text-[#76b900] tracking-tight">
+            Local LLM Hardware & RAM/VRAM Calculator
+          </h1>
+        </div>
+        <p class="text-xs text-slate-400 mt-0.5">
+          Designed and Developed by <a href="https://github.com/DarthTarry" target="_blank" class="text-amber-400 font-bold hover:underline">DarthTarry®</a>
+        </p>
+      </div>
+
+      <!-- Theme Switcher Dropdown -->
+      <div class="flex items-center gap-2">
+        <label for="theme-select" class="text-xs font-bold text-slate-400 uppercase">Theme:</label>
+        <select id="theme-select" onchange="changeTheme(this.value)" class="bg-slate-900 text-slate-200 border border-slate-700 text-xs rounded-lg p-2 font-bold focus:ring-2 focus:ring-[#76b900]">
+          <option value="nvidia">🟢 NVIDIA Dark Gaming</option>
+          <option value="cyberpunk">⚡ Cyberpunk Neon</option>
+          <option value="light">☀️ Clean Light</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 space-y-5">
+
+    <!-- Input Form Card -->
+    <div id="input-card" class="bg-[#121929] rounded-2xl border border-slate-800 p-5 shadow-xl space-y-4">
+      <div class="flex items-center justify-between border-b border-slate-800/80 pb-3">
+        <h2 id="input-title" class="font-bold text-sm uppercase tracking-wider text-[#76b900] flex items-center gap-2">
+          <i class="fa-solid fa-sliders"></i> Model Parameters & Configuration
+        </h2>
+        <span class="text-xs text-slate-400 italic">Hover ℹ️ for details</span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        
+        <!-- 1. Architecture Preset -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Architecture Preset
+            <span class="cursor-help text-xs text-blue-400" title="Pre-configured architecture dimensions (layers, hidden size, attention heads) for popular models like Llama 3, Qwen 2.5, Gemma 2, and DeepSeek R1. Selecting a preset automatically populates the model size.">ℹ️</span>
+          </label>
+          <select id="preset-select" onchange="onPresetChange()" class="w-full bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <option value="custom">Custom / Manual</option>
+            <option value="0.5b">0.5B - Qwen/Qwen2.5-0.5B / meta-llama/Llama-3.2-1B</option>
+            <option value="1.5b">1.5B - Qwen/Qwen2.5-1.5B / deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B</option>
+            <option value="3b">3B - meta-llama/Llama-3.2-3B / Qwen/Qwen2.5-3B</option>
+            <option value="7b">7B - mistralai/Mistral-7B-v0.3 / Qwen2.5-7B / DeepSeek-R1-Distill-Qwen-7B</option>
+            <option value="8b" selected>8B - meta-llama/Llama-3.1-8B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Llama-8B</option>
+            <option value="9b">9B - google/gemma-2-9b</option>
+            <option value="13b">13B - meta-llama/Llama-2-13b-hf</option>
+            <option value="14b">14B - Qwen/Qwen2.5-14B-Instruct / microsoft/Phi-4 / DeepSeek-R1-Distill-Qwen-14B</option>
+            <option value="27b">27B - google/gemma-2-27b</option>
+            <option value="32b">32B - Qwen/Qwen2.5-32B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Qwen-32B</option>
+            <option value="moe_8x7b">46.7B MoE - mistralai/Mixtral-8x7B-v0.1 (12.9B active)</option>
+            <option value="70b">70B - meta-llama/Llama-3.3-70B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Llama-70B</option>
+            <option value="72b">72B - Qwen/Qwen2.5-72B-Instruct</option>
+            <option value="moe_8x22b">141B MoE - mistralai/Mixtral-8x22B-v0.1 (39B active)</option>
+            <option value="671b_moe">671B MoE - deepseek-ai/DeepSeek-R1 / DeepSeek-V3 (37B active)</option>
+          </select>
+        </div>
+
+        <!-- 2. Model Size -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Model Size
+            <span class="cursor-help text-xs text-blue-400" title="The total count of trainable parameters/weights in billions (e.g. 7B, 8B, 14B, 32B, 70B, 671B). Memory required scales directly with parameter count.">ℹ️</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="params-input" value="8.0" step="0.1" min="0.1" oninput="markInputsModified()" class="flex-1 bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <span class="text-xs text-slate-400 font-semibold">Billion Params (B)</span>
+          </div>
+        </div>
+
+        <!-- 3. Prompt / Scenario -->
+        <div class="space-y-1 md:col-span-2">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Prompt / Task Scenario
+            <span class="cursor-help text-xs text-blue-400" title="Pre-sets typical token lengths for common real-world tasks like short chat, document summarization, codebase search, or ultra-long agent memory.">ℹ️</span>
+          </label>
+          <select id="scenario-select" onchange="onScenarioChange()" class="w-full bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <option value="custom">Custom / Manual</option>
+            <option value="chat">Short Chat / Fast Q&A (~1k tokens)</option>
+            <option value="code">Code Autocomplete / Function Gen (~2k tokens)</option>
+            <option value="summary">Article / Document Summarization (~4k tokens)</option>
+            <option value="rag">RAG / Codebase Context Search (~16k tokens)</option>
+            <option value="review">Multi-File Code Review / Tech Specs (~32k tokens)</option>
+            <option value="legal">Legal Contract / Book Analysis (~64k tokens)</option>
+            <option value="agent">Full Repository / Ultra Agent Memory (~128k tokens)</option>
+            <option value="1m">Massive 1M Context Window (~1M tokens)</option>
+          </select>
+          <p id="scenario-desc" class="text-[11px] text-slate-400 italic">Select a scenario or enter context tokens manually</p>
+        </div>
+
+        <!-- 4. Quantization Format -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Quantization Format
+            <span class="cursor-help text-xs text-blue-400" title="Weight compression level measured in Bits Per Weight (BPW). Lower BPW reduces VRAM required for model weights.">ℹ️</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <select id="quant-select" onchange="onQuantChange()" class="flex-1 bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+              <option value="fp32">FP32 (32 bits)</option>
+              <option value="fp16">FP16 (16 bits)</option>
+              <option value="bf16">BF16 (16 bits)</option>
+              <option value="fp8">FP8 (8.0 bits)</option>
+              <option value="q8_0">Q8_0 (8.5 bits)</option>
+              <option value="q6_k">Q6_K (6.56 bits)</option>
+              <option value="q5_k_m">Q5_K_M (5.5 bits)</option>
+              <option value="q4_k_m" selected>Q4_K_M (4.5 bits)</option>
+              <option value="q4_0">Q4_0 (4.5 bits)</option>
+              <option value="q3_k_m">Q3_K_M (3.5 bits)</option>
+              <option value="q2_k">Q2_K (2.5 bits)</option>
+            </select>
+            <span id="bpw-badge" class="text-xs font-bold text-[#76b900]">(~4.5 BPW)</span>
+          </div>
+        </div>
+
+        <!-- 5. Context Length -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Context Length
+            <span class="cursor-help text-xs text-blue-400" title="The maximum token buffer size allocated for input prompt + generated response. Increasing context expands KV Cache VRAM memory.">ℹ️</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="context-input" value="8192" step="512" min="512" oninput="markInputsModified()" class="flex-1 bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <span class="text-xs text-slate-400 font-semibold">Tokens</span>
+          </div>
+        </div>
+
+        <!-- 6. Batch Size -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Batch Size
+            <span class="cursor-help text-xs text-blue-400" title="Number of independent prompt sequences processed concurrently in parallel. Batch size 1 is standard for single-user local chat.">ℹ️</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="number" id="batch-input" value="1" min="1" oninput="markInputsModified()" class="flex-1 bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <span class="text-xs text-slate-400 font-semibold">Sequences</span>
+          </div>
+        </div>
+
+        <!-- 7. Execution / Offloading Mode -->
+        <div class="space-y-1">
+          <label class="font-bold text-slate-200 flex items-center gap-1.5">
+            Execution / Offload Mode
+            <span class="cursor-help text-xs text-blue-400" title="Determines how model layers are partitioned between GPU VRAM and System RAM (e.g. using llama.cpp / GGUF offloading).">ℹ️</span>
+          </label>
+          <select id="offload-select" onchange="markInputsModified()" class="w-full bg-[#050811] text-slate-100 border border-slate-700 rounded-xl p-2.5 text-xs font-medium focus:border-[#76b900] focus:outline-none">
+            <option value="1.0" selected>Full GPU VRAM (100% GPU / 0% CPU RAM)</option>
+            <option value="0.75">Partial Offload (75% GPU VRAM / 25% CPU RAM)</option>
+            <option value="0.50">Partial Offload (50% GPU VRAM / 50% CPU RAM)</option>
+            <option value="0.25">Partial Offload (25% GPU VRAM / 75% CPU RAM)</option>
+            <option value="0.0">CPU RAM Only (0% GPU / 100% CPU RAM)</option>
+          </select>
+        </div>
+
+      </div>
+
+      <!-- Action Button & Status Banner -->
+      <div id="status-banner" class="p-2.5 bg-slate-800/80 rounded-xl border border-slate-700 text-xs font-bold text-emerald-400 text-center flex items-center justify-center gap-2">
+        <span>✅ Calculations up to date!</span>
+      </div>
+
+      <button onclick="doCalculate()" class="w-full py-3.5 bg-[#76b900] hover:bg-[#5f9e00] text-slate-950 font-black text-sm rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+        <i class="fa-solid fa-bolt"></i> Calculate Hardware & RAM Requirements
+      </button>
+    </div>
+
+    <!-- Output Calculation Results Card -->
+    <div id="output-card" class="bg-[#121929] rounded-2xl border border-slate-800 p-5 shadow-xl space-y-3">
+      <h2 id="output-title" class="font-bold text-sm uppercase tracking-wider text-[#76b900] flex items-center gap-2 border-b border-slate-800/80 pb-2">
+        <i class="fa-solid fa-square-poll-vertical"></i> Calculation Results Report
+      </h2>
+
+      <!-- Output Scrollable Terminal Text Box -->
+      <div class="bg-[#050811] rounded-xl border border-slate-800 p-4 font-mono-code text-xs text-emerald-400 overflow-x-auto max-h-[500px] leading-relaxed whitespace-pre" id="report-output-box">
+        <!-- Rendered via JS -->
+      </div>
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-[#121929] border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+    <p>Local LLM Hardware & VRAM Calculator • Designed and Developed by <a href="https://github.com/DarthTarry" target="_blank" class="text-amber-400 font-bold hover:underline">DarthTarry®</a></p>
+  </footer>
+
+  <!-- Calculator Logic Script -->
+  <script>
+    // Quantization Bits Per Weight
+    const QUANTIZATION_BPW = {
+      "fp32": 32.0, "fp16": 16.0, "bf16": 16.0, "fp8": 8.0, "q8_0": 8.5,
+      "q6_k": 6.56, "q5_k_m": 5.5, "q4_k_m": 4.5, "q4_0": 4.5, "q3_k_m": 3.5, "q2_k": 2.5
+    };
+
+    // Architecture Presets
+    const PRESET_MODELS = {
+      "0.5b": { name: "Qwen/Qwen2.5-0.5B / meta-llama/Llama-3.2-1B", params_b: 0.5, layers: 24, hidden_size: 896, heads: 14, kv_heads: 2 },
+      "1.5b": { name: "Qwen/Qwen2.5-1.5B / deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", params_b: 1.5, layers: 28, hidden_size: 1536, heads: 12, kv_heads: 2 },
+      "3b": { name: "meta-llama/Llama-3.2-3B / Qwen/Qwen2.5-3B", params_b: 3.2, layers: 28, hidden_size: 3072, heads: 24, kv_heads: 8 },
+      "7b": { name: "mistralai/Mistral-7B-v0.3 / Qwen2.5-7B / DeepSeek-R1-Distill-Qwen-7B", params_b: 7.0, layers: 32, hidden_size: 4096, heads: 32, kv_heads: 32 },
+      "8b": { name: "meta-llama/Llama-3.1-8B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Llama-8B", params_b: 8.0, layers: 32, hidden_size: 4096, heads: 32, kv_heads: 8 },
+      "9b": { name: "google/gemma-2-9b", params_b: 9.2, layers: 42, hidden_size: 3584, heads: 16, kv_heads: 8 },
+      "13b": { name: "meta-llama/Llama-2-13b-hf", params_b: 13.0, layers: 40, hidden_size: 5120, heads: 40, kv_heads: 40 },
+      "14b": { name: "Qwen/Qwen2.5-14B-Instruct / microsoft/Phi-4 / DeepSeek-R1-Distill-Qwen-14B", params_b: 14.7, layers: 48, hidden_size: 5120, heads: 40, kv_heads: 8 },
+      "27b": { name: "google/gemma-2-27b", params_b: 27.2, layers: 46, hidden_size: 4608, heads: 32, kv_heads: 16 },
+      "32b": { name: "Qwen/Qwen2.5-32B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Qwen-32B", params_b: 32.5, layers: 64, hidden_size: 5120, heads: 40, kv_heads: 8 },
+      "moe_8x7b": { name: "mistralai/Mixtral-8x7B-v0.1 (46.7B MoE - 12.9B active)", params_b: 46.7, layers: 32, hidden_size: 4096, heads: 32, kv_heads: 8 },
+      "70b": { name: "meta-llama/Llama-3.3-70B-Instruct / deepseek-ai/DeepSeek-R1-Distill-Llama-70B", params_b: 70.0, layers: 80, hidden_size: 8192, heads: 64, kv_heads: 8 },
+      "72b": { name: "Qwen/Qwen2.5-72B-Instruct", params_b: 72.7, layers: 80, hidden_size: 8192, heads: 64, kv_heads: 8 },
+      "moe_8x22b": { name: "mistralai/Mixtral-8x22B-v0.1 (141B MoE - 39B active)", params_b: 141.0, layers: 56, hidden_size: 6144, heads: 48, kv_heads: 8 },
+      "671b_moe": { name: "deepseek-ai/DeepSeek-R1 / DeepSeek-V3 (671B MoE - 37B active)", params_b: 671.0, layers: 61, hidden_size: 7168, heads: 128, kv_heads: 128 }
+    };
+
+    // Scenarios
+    const PROMPT_SCENARIOS = {
+      "chat": { context: 1024, chars: 1500, est_tokens: 500, desc: "Quick chat, simple single-turn questions, short email writing." },
+      "code": { context: 2048, chars: 6000, est_tokens: 1500, desc: "Writing code functions, docstrings, bug fixes, or unit test cases." },
+      "summary": { context: 4096, chars: 12000, est_tokens: 3000, desc: "Analyzing news articles, short PDF documents, or long emails." },
+      "rag": { context: 16384, chars: 48000, est_tokens: 12000, desc: "Searching through multiple source code files or enterprise KB documents." },
+      "review": { context: 32768, chars: 100000, est_tokens: 25000, desc: "Reviewing entire pull requests, API docs, or complex specs." },
+      "legal": { context: 65536, chars: 200000, est_tokens: 50000, desc: "Analyzing long legal contracts, research papers, or full books." },
+      "agent": { context: 131072, chars: 400000, est_tokens: 100000, desc: "Massive context LLM tasks, long chat histories, multi-agent long-term memory." },
+      "1m": { context: 1048576, chars: 3000000, est_tokens: 800000, desc: "Extreme long-context models (e.g. Llama 3.1 1M, Gemini-level local context)." }
+    };
+
+    // Theme Configuration
+    const THEMES = {
+      "nvidia": {
+        bg: "#0b0f19", header_bg: "#121929", card_bg: "#121929", fg: "#f8fafc",
+        accent: "#76b900", border: "border-slate-800", text_bg: "#050811", text_fg: "#86efac"
+      },
+      "cyberpunk": {
+        bg: "#0f051d", header_bg: "#1a0b2e", card_bg: "#1a0b2e", fg: "#f8fafc",
+        accent: "#00f0ff", border: "border-pink-900/60", text_bg: "#08020f", text_fg: "#00f0ff"
+      },
+      "light": {
+        bg: "#f8fafc", header_bg: "#ffffff", card_bg: "#ffffff", fg: "#0f172a",
+        accent: "#2563eb", border: "border-slate-200", text_bg: "#f1f5f9", text_fg: "#0f172a"
+      }
+    };
+
+    function markInputsModified() {
+      const banner = document.getElementById('status-banner');
+      banner.className = "p-2.5 bg-amber-950/40 rounded-xl border border-amber-800/60 text-xs font-bold text-amber-300 text-center flex items-center justify-center gap-2";
+      banner.innerHTML = `<span>⚠️ Input selected/changed! Click '⚡ Calculate Hardware & RAM Requirements' below to update results.</span>`;
+    }
+
+    function onPresetChange() {
+      const sel = document.getElementById('preset-select').value;
+      if (sel !== "custom" && PRESET_MODELS[sel]) {
+        document.getElementById('params-input').value = PRESET_MODELS[sel].params_b;
+      }
+      markInputsModified();
+    }
+
+    function onScenarioChange() {
+      const sel = document.getElementById('scenario-select').value;
+      const descEl = document.getElementById('scenario-desc');
+      if (sel !== "custom" && PROMPT_SCENARIOS[sel]) {
+        const info = PROMPT_SCENARIOS[sel];
+        document.getElementById('context-input').value = info.context;
+        descEl.innerText = `Scenario: ${info.desc} (~${info.chars.toLocaleString()} chars / ~${info.est_tokens.toLocaleString()} tokens prompt)`;
+      } else {
+        descEl.innerText = "Custom prompt context setting";
+      }
+      markInputsModified();
+    }
+
+    function onQuantChange() {
+      const quant = document.getElementById('quant-select').value;
+      const bpw = QUANTIZATION_BPW[quant] || 4.5;
+      document.getElementById('bpw-badge').innerText = `(~${bpw} BPW)`;
+      markInputsModified();
+    }
+
+    function changeTheme(themeKey) {
+      const t = THEMES[themeKey] || THEMES["nvidia"];
+      document.getElementById('app-body').style.backgroundColor = t.bg;
+      document.getElementById('app-header').style.backgroundColor = t.header_bg;
+      document.getElementById('header-title').style.color = t.accent;
+      
+      const inputCard = document.getElementById('input-card');
+      const outputCard = document.getElementById('output-card');
+      inputCard.style.backgroundColor = t.card_bg;
+      outputCard.style.backgroundColor = t.card_bg;
+      
+      document.getElementById('input-title').style.color = t.accent;
+      document.getElementById('output-title').style.color = t.accent;
+
+      const outputBox = document.getElementById('report-output-box');
+      outputBox.style.backgroundColor = t.text_bg;
+      outputBox.style.color = t.text_fg;
+    }
+
+    function getGpuRecommendations(vramGb) {
+      if (vramGb === 0) {
+        return {
+          nvidia: "🟢 NVIDIA: N/A (CPU execution selected)",
+          apple: "🍎 Apple: Mac with 16GB+ Unified Memory (CPU/Metal)",
+          amd: "🔴 AMD: Multi-core CPU Mode + DDR4/DDR5 RAM",
+          enterprise: "🏢 Data Center: CPU-only cloud instance / Cluster node"
+        };
+      } else if (vramGb <= 8) {
+        return {
+          nvidia: "🟢 NVIDIA: RTX 3060 12GB / RTX 4060 8GB / RTX 3070 8GB",
+          apple: "🍎 Apple: M1 / M2 / M3 / M4 Mac (16GB Unified Memory)",
+          amd: "🔴 AMD: Radeon RX 6600 XT 8GB / RX 7600 8GB",
+          enterprise: "🏢 Workstation: NVIDIA T4 16GB / RTX A2000 12GB"
+        };
+      } else if (vramGb <= 12) {
+        return {
+          nvidia: "🟢 NVIDIA: RTX 3060 12GB / RTX 4070 12GB / RTX 3080 12GB",
+          apple: "🍎 Apple: M2 Pro / M3 Pro / M4 Pro Mac (18GB-36GB Unified Memory)",
+          amd: "🔴 AMD: Radeon RX 6700 XT 12GB / RX 7700 XT 12GB",
+          enterprise: "🏢 Workstation: NVIDIA RTX A4000 16GB"
+        };
+      } else if (vramGb <= 16) {
+        return {
+          nvidia: "🟢 NVIDIA: RTX 4060 Ti 16GB / RTX 4070 Ti Super 16GB / RTX 3090 24GB",
+          apple: "🍎 Apple: M3 Pro / M4 Pro / M2 Max Mac (36GB Unified Memory)",
+          amd: "🔴 AMD: Radeon RX 6800 16GB / RX 7800 XT 16GB / RX 7900 GRE 16GB",
+          enterprise: "🏢 Workstation: NVIDIA RTX A4500 20GB / Tesla V100 16GB"
+        };
+      } else if (vramGb <= 24) {
+        return {
+          nvidia: "🟢 NVIDIA: RTX 3090 24GB / RTX 4090 24GB / RTX A5000 24GB",
+          apple: "🍎 Apple: M2 Max / M3 Max / M4 Max Mac (36GB-48GB Unified Memory)",
+          amd: "🔴 AMD: Radeon RX 7900 XTX 24GB / Radeon PRO W7800 32GB",
+          enterprise: "🏢 Workstation: NVIDIA RTX A6000 48GB / A10G 24GB"
+        };
+      } else if (vramGb <= 48) {
+        return {
+          nvidia: "🟢 NVIDIA: 2x RTX 3090/4090 (48GB total) / RTX 6000 Ada 48GB",
+          apple: "🍎 Apple: M2 Max / M3 Max / M4 Max Mac (64GB-96GB Unified Memory)",
+          amd: "🔴 AMD: 2x Radeon PRO W7800 (64GB total) / Radeon PRO W7900 48GB",
+          enterprise: "🏢 Data Center: NVIDIA A40 48GB / A100 40GB / L40S 48GB"
+        };
+      } else if (vramGb <= 80) {
+        return {
+          nvidia: "🟢 NVIDIA: 2x RTX 6000 Ada (96GB total) / 4x RTX 4090 (96GB total)",
+          apple: "🍎 Apple: M2 Ultra / M3 Ultra / M4 Max Mac (128GB Unified Memory)",
+          amd: "🔴 AMD: 2x Radeon PRO W7900 (96GB total)",
+          enterprise: "🏢 Data Center: NVIDIA A100 80GB PCIe/SXM / H100 80GB"
+        };
+      } else {
+        const num24 = Math.ceil(vramGb / 24);
+        const num80 = Math.ceil(vramGb / 80);
+        return {
+          nvidia: `🟢 NVIDIA Multi-GPU Rig: ${num24}x RTX 3090/4090 (24GB each)`,
+          apple: "🍎 Apple: Multi-Mac Cluster / High Unified Memory Workstation",
+          amd: `🔴 AMD Enterprise: ${Math.ceil(vramGb/192)}x AMD Instinct MI300X 192GB`,
+          enterprise: `🏢 Data Center Cluster: ${num80}x NVIDIA A100/H100 80GB / H200 141GB`
+        };
+      }
+    }
+
+    function doCalculate() {
+      const params_b = parseFloat(document.getElementById('params-input').value);
+      const quant = document.getElementById('quant-select').value;
+      const context = parseInt(document.getElementById('context-input').value);
+      const batch = parseInt(document.getElementById('batch-input').value);
+      const offloadRatio = parseFloat(document.getElementById('offload-select').value);
+
+      if (isNaN(params_b) || isNaN(context) || isNaN(batch) || params_b <= 0 || context <= 0 || batch <= 0) {
+        alert("Please ensure model size, context length, and batch size are positive numbers.");
+        return;
+      }
+
+      const bpw = QUANTIZATION_BPW[quant] || 4.5;
+      const weights_vram_gb = (params_b * 1e9 * (bpw / 8.0)) / Math.pow(1024, 3);
+
+      // Infer architecture layers & hidden size
+      let layers = 32, hidden_size = 4096, heads = 32, kv_heads = 8;
+      const presetKey = document.getElementById('preset-select').value;
+      if (presetKey !== "custom" && PRESET_MODELS[presetKey]) {
+        const p = PRESET_MODELS[presetKey];
+        layers = p.layers; hidden_size = p.hidden_size; heads = p.heads; kv_heads = p.kv_heads;
+      } else if (params_b >= 600) {
+        layers = 61; hidden_size = 7168; heads = 128; kv_heads = 128;
+      } else if (params_b >= 60) {
+        layers = 80; hidden_size = 8192; heads = 64; kv_heads = 8;
+      } else if (params_b >= 25) {
+        layers = 64; hidden_size = 5120; heads = 40; kv_heads = 8;
+      } else if (params_b >= 13) {
+        layers = 40; hidden_size = 5120; heads = 40; kv_heads = 8;
+      }
+
+      const head_dim = hidden_size / Math.max(heads, 1);
+      const kv_bytes_per_elem = (quant === "fp16" || quant === "bf16") ? 2.0 : ((quant === "fp8" || quant === "q8_0") ? 1.0 : 0.5);
+      const kv_cache_bytes = 2 * layers * kv_heads * head_dim * context * batch * kv_bytes_per_elem;
+      const kv_cache_vram_gb = kv_cache_bytes / Math.pow(1024, 3);
+
+      const activation_overhead_gb = 0.6 + (0.00005 * context * batch);
+      const total_model_memory_gb = weights_vram_gb + kv_cache_vram_gb + activation_overhead_gb;
+
+      const required_vram_gb = total_model_memory_gb * offloadRatio;
+      const required_ram_gb = total_model_memory_gb * (1.0 - offloadRatio);
+
+      const recommended_vram_gb = required_vram_gb > 0 ? Math.ceil(required_vram_gb * 1.15) : 0;
+      
+      let needed_ram = (offloadRatio >= 1.0) ? Math.max(16.0, weights_vram_gb + 6.0) : (required_ram_gb + 8.0);
+      let recommended_system_ram_gb = 16;
+      for (let rTier of [16, 32, 64, 128, 256, 512]) {
+        if (needed_ram <= rTier) {
+          recommended_system_ram_gb = rTier;
+          break;
+        }
+      }
+      if (needed_ram > 512) recommended_system_ram_gb = Math.ceil(needed_ram * 1.15);
+
+      const min_tflops_fp16 = (params_b * 2.5).toFixed(1);
+      const recommended_cuda_cores = Math.round(params_b * 350);
+
+      const gpus = getGpuRecommendations(recommended_vram_gb);
+      const scenarioSel = document.getElementById('scenario-select');
+      const scenarioText = scenarioSel.options[scenarioSel.selectedIndex].text;
+      const scenarioInfo = scenarioSel.value !== 'custom' ? `Prompt Scenario    : ${scenarioText}\n` : '';
+
+      const report = `======================================================================
+  LLM LOCAL RUNTIME HARDWARE & MEMORY REPORT
+  Designed and Developed by DarthTarry® (https://github.com/DarthTarry)
+======================================================================
+Model Parameters   : ${params_b} Billion
+Quantization       : ${quant.toUpperCase()} (~${bpw} bits/weight)
+Context Length     : ${context.toLocaleString()} tokens
+Batch Size         : ${batch}
+Execution Mode     : ${offloadRatio * 100}% GPU / ${(1.0 - offloadRatio) * 100}% CPU RAM
+${scenarioInfo}----------------------------------------------------------------------
+EXACT MEMORY BREAKDOWN & CALCULATION FORMULAS:
+ • Model Weights Memory  : ${weights_vram_gb.toFixed(2).padStart(6)} GB
+   [Formula: Params(${params_b}B) * (${bpw} bits / 8) / 1024³]
+
+ • KV Cache Memory       : ${kv_cache_vram_gb.toFixed(2).padStart(6)} GB
+   [Formula: 2 * ${layers} layers * ${kv_heads} kv_heads * ${Math.round(head_dim)} head_dim * ${context.toLocaleString()} ctx * ${batch} batch * 2 bytes / 1024³]
+
+ • Runtime Overhead      : ${activation_overhead_gb.toFixed(2).padStart(6)} GB
+   [Formula: Base CUDA Runtime (0.6 GB) + Activation Buffer (0.00005 * ${context.toLocaleString()} ctx * ${batch} batch)]
+
+ --------------------------------------------------------------------
+ • Total Model Memory    : ${total_model_memory_gb.toFixed(2).padStart(6)} GB
+   [Formula: Weights (${weights_vram_gb.toFixed(2)} GB) + KV Cache (${kv_cache_vram_gb.toFixed(2)} GB) + Overhead (${activation_overhead_gb.toFixed(2)} GB)]
+
+----------------------------------------------------------------------
+RECOMMENDED HARDWARE & RAM SPECS (WITH CALCULATION LOGIC):
+ • GPU VRAM Required     : ${required_vram_gb.toFixed(2).padStart(6)} GB
+   [Formula: Total Memory (${total_model_memory_gb.toFixed(2)} GB) * GPU Offload Ratio (${Math.round(offloadRatio * 100)}%)]
+   -> Min GPU VRAM Rec.  : ${recommended_vram_gb} GB VRAM
+   [Formula: VRAM Required (${required_vram_gb.toFixed(2)} GB) * 1.15 Safety Buffer (rounded up)]
+
+ • System RAM Required   : ${required_ram_gb.toFixed(2).padStart(6)} GB
+   [Formula: Total Memory (${total_model_memory_gb.toFixed(2)} GB) * CPU Offload Ratio (${Math.round((1.0 - offloadRatio) * 100)}%)]
+   -> Total PC RAM Rec.  : ${recommended_system_ram_gb} GB RAM
+   [Formula: Required RAM + Host OS/Display Buffer (6-8 GB) rounded to nearest RAM Tier]
+
+ • Approx. CUDA Cores     : ~${recommended_cuda_cores.toLocaleString()} cores
+   [Formula: Params (${params_b}B) * ~350 CUDA cores/B for ~20 tokens/sec]
+
+ • Approx. FP16 Compute   : ~${min_tflops_fp16} TFLOPS
+   [Formula: Params (${params_b}B) * 2.5 TFLOPS for interactive generation speed]
+
+----------------------------------------------------------------------
+SUGGESTED HARDWARE OPTIONS BY BRAND:
+ ${gpus.nvidia}
+ ${gpus.apple}
+ ${gpus.amd}
+ ${gpus.enterprise}
+======================================================================`;
+
+      document.getElementById('report-output-box').innerText = report;
+
+      const banner = document.getElementById('status-banner');
+      banner.className = "p-2.5 bg-emerald-950/40 rounded-xl border border-emerald-800/60 text-xs font-bold text-emerald-400 text-center flex items-center justify-center gap-2";
+      banner.innerHTML = `<span>✅ Calculations up to date! Results generated for selected inputs.</span>`;
+    }
+
+    // Run Initial Calculation on Page Load
+    window.addEventListener('DOMContentLoaded', () => {
+      doCalculate();
+    });
+  </script>
+</body>
+</html>
