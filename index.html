@@ -11,16 +11,17 @@
   <!-- Embedded 128 Questions Dataset (Allows running completely standalone without local server or CORS block) -->
   <script src="embedded_dataset.js"></script>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 font-sans flex flex-col">
+<body class="bg-[#0b132b] min-h-screen text-slate-100 font-sans flex flex-col">
 
   <!-- Top Navigation Header -->
-  <header class="bg-slate-900 text-white shadow-md sticky top-0 z-50">
+  <header class="bg-[#1c2541] text-white shadow-md sticky top-0 z-50">
     <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-3">
         <span class="text-2xl">🇺🇸</span>
         <div>
-          <h1 class="font-bold text-lg leading-tight">USCIS Civics N-400 Study App</h1>
-          <p class="text-xs text-slate-400">2025 Official Version (128 Questions)</p>
+          <h1 class="font-bold text-lg leading-tight text-slate-100">USCIS Civics N-400 Study App</h1>
+          <p class="text-xs text-amber-400 font-medium">⭐ Star-Spangled Banner Dark Edition (128 Questions)</p>
+          <p class="text-[11px] text-slate-400 italic">Designed and Developed by <a href="https://github.com/DarthTarry" target="_blank" class="text-amber-400 font-bold hover:underline">DarthTarry®</a></p>
         </div>
       </div>
       <div id="flagged-badge" class="bg-amber-500 text-slate-900 font-bold text-xs px-2.5 py-1 rounded-full hidden">
@@ -30,7 +31,7 @@
 
     <!-- Navigation Tabs -->
     <div class="max-w-4xl mx-auto px-2 flex border-t border-slate-800 text-sm font-medium">
-      <button id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition">
+      <button id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="flex-1 py-2.5 text-center border-b-2 border-red-500 text-red-400 font-bold transition">
         <i class="fa-solid fa-clone mr-1.5"></i> Flashcards
       </button>
       <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
@@ -38,6 +39,9 @@
       </button>
       <button id="tab-btn-flagged" onclick="switchTab('flagged')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
         <i class="fa-solid fa-star mr-1.5"></i> Flagged (<span id="flagged-count-tab">0</span>)
+      </button>
+      <button id="tab-btn-feedback" onclick="switchTab('feedback')" class="flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition">
+        <i class="fa-solid fa-envelope mr-1.5"></i> Feedback
       </button>
     </div>
   </header>
@@ -217,16 +221,16 @@
 
     <!-- VIEW 3: FLAGGED & MISSED QUESTIONS -->
     <section id="view-flagged" class="hidden space-y-4">
-      <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div class="bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-700 flex items-center justify-between">
         <div>
-          <h2 class="font-bold text-base text-slate-900">Flagged & Missed Questions</h2>
-          <p class="text-xs text-slate-500"><span id="flagged-total-count">0</span> items saved for study review</p>
+          <h2 class="font-bold text-base text-slate-100">Flagged & Missed Questions</h2>
+          <p class="text-xs text-slate-400"><span id="flagged-total-count">0</span> items saved for study review</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="startQuizWithFlagged()" class="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-lg transition">
+          <button onclick="startQuizWithFlagged()" class="px-3 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-lg transition">
             🎯 Quiz Flagged
           </button>
-          <button onclick="clearAllFlags()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-lg transition">
+          <button onclick="clearAllFlags()" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 font-semibold text-xs rounded-lg transition">
             Clear All
           </button>
         </div>
@@ -235,6 +239,41 @@
       <!-- List Container -->
       <div id="flagged-list-container" class="space-y-3">
         <!-- Rendered via JS -->
+      </div>
+    </section>
+
+    <!-- VIEW 4: USER FEEDBACK SECTION -->
+    <section id="view-feedback" class="hidden space-y-4">
+      <div class="bg-slate-800 p-6 rounded-2xl shadow-sm border border-slate-700 space-y-4">
+        <h2 class="font-bold text-lg text-amber-400 border-b border-slate-700 pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-envelope"></i> User Feedback & Suggestions
+        </h2>
+        <p class="text-xs text-slate-300 leading-relaxed">
+          Have questions, corrections, or study feature suggestions? Send your feedback directly to the developer!
+        </p>
+
+        <div class="space-y-3">
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Feedback Topic</label>
+            <select id="fb-topic-select" class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-xs font-medium rounded-xl p-2.5 focus:ring-2 focus:ring-red-500">
+              <option value="USCIS N-400 Civics App - General Feedback">USCIS N-400 Civics App - General Feedback</option>
+              <option value="USCIS N-400 Civics App - Question or Answer Correction">USCIS N-400 Civics App - Question or Answer Correction</option>
+              <option value="USCIS N-400 Civics App - Feature Suggestion">USCIS N-400 Civics App - Feature Suggestion</option>
+              <option value="USCIS N-400 Civics App - Practice Quiz Feedback">USCIS N-400 Civics App - Practice Quiz Feedback</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Your Message / Comments</label>
+            <textarea id="fb-message-text" rows="6" placeholder="Type your feedback message here..." class="w-full bg-slate-900 border border-slate-700 text-slate-100 text-xs font-medium rounded-xl p-3 focus:ring-2 focus:ring-red-500 focus:outline-none"></textarea>
+          </div>
+
+          <p class="text-[11px] text-slate-400 italic">Recipient: arun.vijayaraghavan1982@gmail.com</p>
+
+          <button onclick="sendWebFeedback()" class="w-full py-3 bg-red-600 hover:bg-red-700 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2 shadow-md">
+            <i class="fa-solid fa-paper-plane"></i> Send Feedback via Email
+          </button>
+        </div>
       </div>
     </section>
 
@@ -279,22 +318,39 @@
       document.getElementById('view-flashcards').classList.add('hidden');
       document.getElementById('view-quiz').classList.add('hidden');
       document.getElementById('view-flagged').classList.add('hidden');
+      document.getElementById('view-feedback').classList.add('hidden');
 
       document.getElementById('tab-btn-flashcards').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
       document.getElementById('tab-btn-quiz').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
       document.getElementById('tab-btn-flagged').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
+      document.getElementById('tab-btn-feedback').className = "flex-1 py-2.5 text-center border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition";
 
       if (tabName === 'flashcards') {
         document.getElementById('view-flashcards').classList.remove('hidden');
-        document.getElementById('tab-btn-flashcards').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+        document.getElementById('tab-btn-flashcards').className = "flex-1 py-2.5 text-center border-b-2 border-red-500 text-red-400 font-bold transition";
       } else if (tabName === 'quiz') {
         document.getElementById('view-quiz').classList.remove('hidden');
-        document.getElementById('tab-btn-quiz').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+        document.getElementById('tab-btn-quiz').className = "flex-1 py-2.5 text-center border-b-2 border-red-500 text-red-400 font-bold transition";
       } else if (tabName === 'flagged') {
         document.getElementById('view-flagged').classList.remove('hidden');
-        document.getElementById('tab-btn-flagged').className = "flex-1 py-2.5 text-center border-b-2 border-blue-500 text-blue-400 font-bold transition";
+        document.getElementById('tab-btn-flagged').className = "flex-1 py-2.5 text-center border-b-2 border-red-500 text-red-400 font-bold transition";
         renderFlaggedList();
+      } else if (tabName === 'feedback') {
+        document.getElementById('view-feedback').classList.remove('hidden');
+        document.getElementById('tab-btn-feedback').className = "flex-1 py-2.5 text-center border-b-2 border-red-500 text-red-400 font-bold transition";
       }
+    }
+
+    function sendWebFeedback() {
+      const topic = document.getElementById('fb-topic-select').value;
+      const msg = document.getElementById('fb-message-text').value.trim();
+      if (!msg) {
+        alert("Please enter your feedback message before sending.");
+        return;
+      }
+      const recipient = "arun.vijayaraghavan1982@gmail.com";
+      const mailtoUrl = `mailto:${recipient}?subject=${encodeURIComponent(topic)}&body=${encodeURIComponent(msg)}`;
+      window.location.href = mailtoUrl;
     }
 
     // Flagged Persistent Storage
