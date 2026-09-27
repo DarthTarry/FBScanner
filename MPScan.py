@@ -10,7 +10,7 @@ from urllib.parse import quote
 ZIP_CODES = ["08502", "07310"]
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "6141714840")
-COOKIE_FILE = os.getenv("FB_COOKIE_FILE", "fb_cookies.json")
+COOKIE_FILE = os.getenv("FB_COOKIE_FILE", "")
 
 # Comprehensive search queries matching your target component list
 QUERIES = [
@@ -291,7 +291,7 @@ async def scrape_facebook_marketplace(page, query, zip_code, distance):
 
     return listings
 
-async def run_agent(zip_codes, queries, distance):
+async def run_agent(zip_codes, queries, distance, cookie_file=None):
     from playwright.async_api import async_playwright
 
     init_db()
@@ -305,17 +305,17 @@ async def run_agent(zip_codes, queries, distance):
         )
 
         # Load exported cookies if available
-        if os.path.exists(COOKIE_FILE):
+        if cookie_file and os.path.exists(cookie_file):
             try:
-                with open(COOKIE_FILE, "r") as f:
+                with open(cookie_file, "r") as f:
                     cookies = json.load(f)
                 cookies = normalize_cookies(cookies)
                 await context.add_cookies(cookies)
-                print(f"Successfully loaded {len(cookies)} cookies from {COOKIE_FILE}.")
+                print(f"Successfully loaded {len(cookies)} cookies from {cookie_file}.")
             except Exception as e:
                 print(f"Error loading cookies: {e}")
         else:
-            print(f"ℹ️ Notice: '{COOKIE_FILE}' not found. If Facebook blocks the feed, export your cookies into this directory.")
+            print("Running without Facebook cookies; anonymous Marketplace access may be limited.")
 
         page = await context.new_page()
 
@@ -376,6 +376,16 @@ if __name__ == "__main__":
         help="Use the desktop popup instead of server-friendly command-line options.",
     )
     parser.add_argument(
+        "--cookie-file",
+        default=COOKIE_FILE,
+        help="Optional exported Facebook cookie JSON file.",
+    )
+    parser.add_argument(
+        "--no-cookies",
+        action="store_true",
+        help="Run without loading Facebook cookies (default when no file is configured).",
+    )
+    parser.add_argument(
         "--interval",
         type=int,
         default=0,
@@ -406,7 +416,8 @@ if __name__ == "__main__":
             parser.error("at least one ZIP code and one query are required")
         else:
             while True:
-                asyncio.run(run_agent(selected_zips, selected_queries, distance))
+                cookie_file = None if args.no_cookies else args.cookie_file
+                asyncio.run(run_agent(selected_zips, selected_queries, distance, cookie_file))
                 if args.interval == 0:
                     break
                 print(f"Scan complete; next scan in {args.interval} seconds.")
